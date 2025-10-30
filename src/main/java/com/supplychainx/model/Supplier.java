@@ -2,9 +2,10 @@ package com.supplychainx.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.List;
 
 @Entity
-@Table(name ="supplier")
+@Table(name = "suppliers")
 @Getter
 @Setter
 @ToString
@@ -23,12 +24,13 @@ public class Supplier {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column // so the nullable is true by default
+    @Column
     private Double rating;
 
     @Column
     private int leadTime;
 
-    @OneToMany(mappedBy = "supplier" , cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @ToString.Exclude
     private List<SupplyOrder> supplyOrders;
 }
