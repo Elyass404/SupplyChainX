@@ -7,9 +7,12 @@ import lombok.*;
 @Entity
 @Table(name = "users")
 @Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @RequiredArgsConstructor
+@ToString
 @Builder
 public class User{
 
