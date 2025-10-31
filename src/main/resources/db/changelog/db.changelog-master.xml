@@ -6,5 +6,6 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
 
     <include file="db/changelog/01-create-user-table.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/02-create-supplier-table.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
