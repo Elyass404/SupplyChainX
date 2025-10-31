@@ -5,9 +5,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
 
-    <!-- Placeholder for now -->
-    <changeSet id="init-placeholder" author="youcode">
-        <comment>Initial empty changelog to allow app startup</comment>
-    </changeSet>
+    <include file="db/changelog/01-create-user-table.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
