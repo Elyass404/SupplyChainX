@@ -9,7 +9,7 @@ public interface SupplierService {
 
     Supplier createSupplier(Supplier  supplier);
 
-    Supplier updateSupplier(Supplier supplier);
+    Supplier updateSupplier(Long id,Supplier supplier);
 
     void deleteSupplier(Long id);
 
