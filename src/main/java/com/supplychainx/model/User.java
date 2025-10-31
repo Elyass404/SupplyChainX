@@ -10,7 +10,7 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
-@RequiredArgsConstructor
+@RequiredArgsConstructor // by default and since there is no final attribute, or @NonNull, this annotation provides the @NoArgsConstructor
 @ToString
 @Builder
 public class User{
