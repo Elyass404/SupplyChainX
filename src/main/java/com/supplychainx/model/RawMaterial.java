@@ -41,5 +41,7 @@ public class RawMaterial {
     @ToString.Exclude
     private List<Supplier> suppliers;
 
+    @OneToMany(mappedBy = "rawMaterial", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @ToString.Exclude
     private List<SupplyOrderMaterial>  supplyOrderMaterials;
 }
