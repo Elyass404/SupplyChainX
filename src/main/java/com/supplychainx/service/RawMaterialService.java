@@ -1,29 +1,33 @@
 package com.supplychainx.service;
 
 import com.supplychainx.model.RawMaterial;
-
 import java.util.List;
 import java.util.Optional;
 
 public interface RawMaterialService {
+
+    // CRUD Operations
     RawMaterial createRawMaterial(RawMaterial rawMaterial);
 
     RawMaterial updateRawMaterial(Long id ,RawMaterial rawMaterial);
 
-    void deleteRawMaterial(RawMaterial rawMaterial);
+    void deleteRawMaterial(Long id );
 
+    // Retrieval
     Optional<RawMaterial> findRawMaterialById(Long id);
 
     List<RawMaterial> findAllRawMaterial();
 
+    Optional<RawMaterial> findByName(String name); // Updated return type
 
-    RawMaterial findByName(String name);
-
+    // Business & Utility Methods
     boolean existsByName(String name);
 
-    List<RawMaterial> findByNameContainingIgnoreCase(String fragment);
+    List<RawMaterial> searchRawMaterials(String name);
 
-    List<RawMaterial> findByStockLessThanEqual(Integer stockThreshold);
+    // Business Logic Methods
+    List<RawMaterial> getMaterialsAtOrBelowStock(Integer stockThreshold);
 
-    List<RawMaterial> findBySuppliers_Id(Long supplierId);
+    List<RawMaterial> getMaterialsBySupplier(Long supplierId);
+
 }

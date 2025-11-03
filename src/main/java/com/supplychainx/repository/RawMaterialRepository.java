@@ -5,12 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RawMaterialRepository  extends JpaRepository<RawMaterial,Long> {
 
     // Find a material by exact name (useful for uniqueness checks)
-    RawMaterial findByName(String name);
+    Optional<RawMaterial> findByName(String name);
 
     // Check if a material with the given name already exists
     boolean existsByName(String name);
