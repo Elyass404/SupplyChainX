@@ -1,13 +1,18 @@
 package com.supplychainx.service.impl;
 
+import com.supplychainx.dto.request.RawMaterialRequest;
+import com.supplychainx.dto.response.RawMaterialResponse;
 import com.supplychainx.exception.NameAlreadyExistsException;
 import com.supplychainx.exception.RessourceNotFoundException;
+import com.supplychainx.mapper.RawMaterialMapper; // New import
 import com.supplychainx.model.RawMaterial;
+import com.supplychainx.model.Supplier;
 import com.supplychainx.repository.RawMaterialRepository;
+import com.supplychainx.repository.SupplierRepository; // New import
 import com.supplychainx.service.RawMaterialService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Good practice for service methods
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,92 +23,135 @@ import java.util.Optional;
 public class RawMaterialServiceImpl implements RawMaterialService {
 
     private final RawMaterialRepository rawMaterialRepository;
+    private final SupplierRepository supplierRepository; // Injected to handle relationships
+    private final RawMaterialMapper rawMaterialMapper; // Injected Mapper
 
-    // --- CRUD ---
+    // --- Helper Method for Suppliers ---
+    /**
+     * Finds and returns a list of Supplier entities based on their IDs.
+     * Throws RessourceNotFoundException if any ID is invalid.
+     */
+    private List<Supplier> findSuppliersByIds(List<Long> supplierIds) {
+        if (supplierIds == null || supplierIds.isEmpty()) {
+            throw new IllegalArgumentException("Raw material must be linked to at least one supplier.");
+        }
+
+        List<Supplier> suppliers = supplierRepository.findAllById(supplierIds);
+
+        if (suppliers.size() != supplierIds.size()) {
+            // This is a robust way to check if all IDs were found
+            throw new RessourceNotFoundException("One or more supplier IDs provided were invalid.");
+        }
+        return suppliers;
+    }
+
+    // --- CRUD Operations ---
 
     @Override
-    public RawMaterial createRawMaterial(RawMaterial rawMaterial) {
-        //lets exist existence check before save (prevents DB unique constraint violation)
-        if (rawMaterialRepository.existsByName(rawMaterial.getName())) {
-            throw new NameAlreadyExistsException("Material with the Name: " + rawMaterial.getName() + " already exists.");
+    public RawMaterialResponse createRawMaterial(RawMaterialRequest request) {
+        // 1. Uniqueness check
+        if (rawMaterialRepository.existsByName(request.getName())) {
+            throw new NameAlreadyExistsException("Material with the Name: " + request.getName() + " already exists.");
         }
-        return rawMaterialRepository.save(rawMaterial);
+
+        // 2. Fetch related entities (Suppliers)
+        List<Supplier> suppliers = findSuppliersByIds(request.getSupplierIds());
+
+        // 3. Convert DTO to Entity and set relationships
+        RawMaterial newMaterial = rawMaterialMapper.toEntity(request);
+        newMaterial.setSuppliers(suppliers);
+
+        // 4. Save and return Response DTO
+        RawMaterial savedMaterial = rawMaterialRepository.save(newMaterial);
+        return rawMaterialMapper.toResponse(savedMaterial);
     }
 
     @Override
-    public RawMaterial updateRawMaterial(Long id, RawMaterial rawMaterial) {
-        // first we check the existence of the material
+    public RawMaterialResponse updateRawMaterial(Long id, RawMaterialRequest request) {
         RawMaterial existingRawMaterial = rawMaterialRepository.findById(id)
                 .orElseThrow(() -> new RessourceNotFoundException("Material with ID: " + id + " not found."));
 
-        // Check for name change conflict (Only check if the name is changing)
-        if (!existingRawMaterial.getName().equalsIgnoreCase(rawMaterial.getName()) &&
-                rawMaterialRepository.existsByName(rawMaterial.getName())) {
-            throw new NameAlreadyExistsException("Cannot update. Material with name '" + rawMaterial.getName() + "' already exists.");
+        // 1. Uniqueness check for name change
+        if (!existingRawMaterial.getName().equalsIgnoreCase(request.getName()) &&
+                rawMaterialRepository.existsByName(request.getName())) {
+            throw new NameAlreadyExistsException("Cannot update. Material with name '" + request.getName() + "' already exists.");
         }
 
-        // Update fields from the DTO/input object
-        existingRawMaterial.setName(rawMaterial.getName());
-        existingRawMaterial.setStock(rawMaterial.getStock());
-        existingRawMaterial.setStockMin(rawMaterial.getStockMin());
-        existingRawMaterial.setUnit(rawMaterial.getUnit());
+        // 2. Fetch related entities (Suppliers)
+        List<Supplier> suppliers = findSuppliersByIds(request.getSupplierIds());
 
+        // 3. Update core fields and relationships
+        existingRawMaterial.setName(request.getName());
+        existingRawMaterial.setStock(request.getStock());
+        existingRawMaterial.setStockMin(request.getStockMin());
+        existingRawMaterial.setUnit(request.getUnit());
+        existingRawMaterial.setSuppliers(suppliers); // Update the relationship
 
-        return rawMaterialRepository.save(existingRawMaterial);
+        // 4. Save and return Response DTO
+        RawMaterial savedMaterial = rawMaterialRepository.save(existingRawMaterial);
+        return rawMaterialMapper.toResponse(savedMaterial);
     }
 
     @Override
     public void deleteRawMaterial(Long id) {
-        // first  we check the material if it is existing
         if (!rawMaterialRepository.existsById(id)) {
             throw new RessourceNotFoundException("Material with ID: " + id + " not found.");
         }
         rawMaterialRepository.deleteById(id);
     }
 
-    // --- Retrieval Methods ---
+    // --- Retrieval & Utility Methods ---
 
     @Override
-    public Optional<RawMaterial> findRawMaterialById(Long id) {
-
-        return rawMaterialRepository.findById(id);
+    @Transactional(readOnly = true)
+    public RawMaterialResponse findRawMaterialById(Long id) {
+        RawMaterial material = rawMaterialRepository.findById(id)
+                .orElseThrow(() -> new RessourceNotFoundException("Material with ID: " + id + " not found."));
+        return rawMaterialMapper.toResponse(material);
     }
 
     @Override
-    public List<RawMaterial> findAllRawMaterial() {
-        return rawMaterialRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<RawMaterialResponse> findAllRawMaterial() {
+        return rawMaterialMapper.toResponseList(rawMaterialRepository.findAll());
     }
 
     @Override
-    public Optional<RawMaterial> findByName(String name) {
-
-        return rawMaterialRepository.findByName(name);
+    @Transactional(readOnly = true)
+    public Optional<RawMaterialResponse> findByName(String name) {
+        return rawMaterialRepository.findByName(name)
+                .map(rawMaterialMapper::toResponse);
     }
 
-    // --- Utility & Business Methods (New Names) ---
-
     @Override
+    @Transactional(readOnly = true)
     public boolean existsByName(String name) {
-
         return rawMaterialRepository.existsByName(name);
     }
 
-    @Override
-    public List<RawMaterial> searchRawMaterials(String name) {
-
-        return rawMaterialRepository.findByNameContainingIgnoreCase(name);
-    }
-
+    // --- Business Methods ---
 
     @Override
-    public List<RawMaterial> getMaterialsAtOrBelowStock(Integer stockThreshold) {
-
-        return rawMaterialRepository.findByStockLessThanEqual(stockThreshold);
+    @Transactional(readOnly = true)
+    public List<RawMaterialResponse> searchRawMaterials(String query) {
+        return rawMaterialMapper.toResponseList(
+                rawMaterialRepository.findByNameContainingIgnoreCase(query)
+        );
     }
 
     @Override
-    public List<RawMaterial> getMaterialsBySupplier(Long supplierId) {
+    @Transactional(readOnly = true)
+    public List<RawMaterialResponse> getMaterialsAtOrBelowStock(Integer stockThreshold) {
+        return rawMaterialMapper.toResponseList(
+                rawMaterialRepository.findByStockLessThanEqual(stockThreshold)
+        );
+    }
 
-        return rawMaterialRepository.findBySuppliers_Id(supplierId);
+    @Override
+    @Transactional(readOnly = true)
+    public List<RawMaterialResponse> getMaterialsBySupplier(Long supplierId) {
+        return rawMaterialMapper.toResponseList(
+                rawMaterialRepository.findBySuppliers_Id(supplierId)
+        );
     }
 }

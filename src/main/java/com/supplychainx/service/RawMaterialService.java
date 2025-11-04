@@ -1,33 +1,33 @@
 package com.supplychainx.service;
 
-import com.supplychainx.model.RawMaterial;
+import com.supplychainx.dto.request.RawMaterialRequest;
+import com.supplychainx.dto.response.RawMaterialResponse;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface RawMaterialService {
 
-    // CRUD Operations
-    RawMaterial createRawMaterial(RawMaterial rawMaterial);
+    // --- CRUD Operations ---
+    RawMaterialResponse createRawMaterial(RawMaterialRequest request);
 
-    RawMaterial updateRawMaterial(Long id ,RawMaterial rawMaterial);
+    RawMaterialResponse updateRawMaterial(Long id ,RawMaterialRequest request);
 
     void deleteRawMaterial(Long id );
 
-    // Retrieval
-    Optional<RawMaterial> findRawMaterialById(Long id);
+    // --- Retrieval ---
+    RawMaterialResponse findRawMaterialById(Long id); // Updated to return DTO directly
 
-    List<RawMaterial> findAllRawMaterial();
+    List<RawMaterialResponse> findAllRawMaterial();
 
-    Optional<RawMaterial> findByName(String name); // Updated return type
+    Optional<RawMaterialResponse> findByName(String name);
 
-    // Business & Utility Methods
+    // --- Business & Utility Methods ---
     boolean existsByName(String name);
 
-    List<RawMaterial> searchRawMaterials(String name);
+    List<RawMaterialResponse> searchRawMaterials(String query);
 
-    // Business Logic Methods
-    List<RawMaterial> getMaterialsAtOrBelowStock(Integer stockThreshold);
+    List<RawMaterialResponse> getMaterialsAtOrBelowStock(Integer stockThreshold);
 
-    List<RawMaterial> getMaterialsBySupplier(Long supplierId);
-
+    List<RawMaterialResponse> getMaterialsBySupplier(Long supplierId);
 }
