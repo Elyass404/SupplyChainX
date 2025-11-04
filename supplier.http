@@ -1,0 +1,9 @@
+POST http://localhost:8080/api/v1/suppliers
+Content-Type: application/json
+
+{
+  "name": "Global Metals Inc.",
+  "email": "contact@globalmetals.com",
+  "rating": 4.5,
+  "leadTime": 14
+}
