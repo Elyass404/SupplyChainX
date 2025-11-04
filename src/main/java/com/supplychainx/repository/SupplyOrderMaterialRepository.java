@@ -10,7 +10,7 @@ import java.util.List;
 public interface SupplyOrderMaterialRepository extends JpaRepository<SupplyOrderMaterial,Long> {
 
     // Find all material items for a specific supply order
-    List<SupplyOrderMaterial> findBySupplyOrder_id(Long supplyOrderId);
+    List<SupplyOrderMaterial> findBySupplyOrder_Id(Long supplyOrderId);
 
     // Find all supply orders that include a specific raw material
     List<SupplyOrderMaterial> findByRawMaterial_Id(Long rawMaterialId);

@@ -22,4 +22,6 @@ public interface SupplyOrderRepository extends JpaRepository<SupplyOrder, Long> 
 
     // Check if a supplier has an existing order with a given date (example for duplicate prevention)
     boolean existsBySupplier_IdAndOrderDate(Long supplierId, LocalDate orderDate);
+
+    List<SupplyOrder> findByStatusOrderByOrderDateDesc(SupplyOrderStatus status);
 }

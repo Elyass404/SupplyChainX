@@ -17,13 +17,21 @@ public class SupplyOrderMaterial {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    // --- Relationships ---
+
+    // ManyToOne: Each line item belongs to one SupplyOrder
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supply_order_id", nullable = false)
+    @ToString.Exclude
     private SupplyOrder supplyOrder;
 
-    @ManyToOne
+    // ManyToOne: Each line item specifies one RawMaterial
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "raw_material_id", nullable = false)
+    @ToString.Exclude
     private RawMaterial rawMaterial;
+
+    // --- Attributes ---
 
     @Column(nullable = false)
     private Integer quantity;
