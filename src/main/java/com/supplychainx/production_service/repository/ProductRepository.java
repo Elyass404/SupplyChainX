@@ -2,6 +2,15 @@ package com.supplychainx.production_service.repository;
 
 import com.supplychainx.production_service.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface ProdutRepository extends JpaRepository<Product,Long> {
+import java.util.List;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+
+
+    List<Product> findByNameContainingIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCase(String name);
 }

@@ -9,5 +9,7 @@
     <include file="db/changelog/02-create-supplier-table.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/03-create-raw-material-table.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/04-create-supply-order-tables.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/05-create-production-product-table.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/06-create-production-order-tables.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
