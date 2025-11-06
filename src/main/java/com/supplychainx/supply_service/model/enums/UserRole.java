@@ -1,0 +1,14 @@
+package com.supplychainx.supply_service.model.enums;
+
+public enum UserRole {
+    ADMIN,
+    PROCUREMENT_MANAGER,
+    PURCHASE_MANAGER,
+    LOGISTICS_SUPERVISOR,
+    PRODUCTION_CHIEF,
+    PLANNER,
+    PRODUCTION_SUPERVISOR,
+    SALES_MANAGER,
+    DELIVERY_SUPERVISOR,
+    LOGISTICS_MANAGER
+}
