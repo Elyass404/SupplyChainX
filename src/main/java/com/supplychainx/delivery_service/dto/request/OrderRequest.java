@@ -21,8 +21,6 @@ public class OrderRequest {
     @Min(value = 1 , message = "The quantity should be at least 1.")
     Integer quantity;
 
-    @NotBlank(message = "The address is required.")
-    String address;
 
     //for the status that will be handeled in the service to give automatically the new orders the value of in Preparation
 

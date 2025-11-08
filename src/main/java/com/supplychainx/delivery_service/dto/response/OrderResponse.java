@@ -10,7 +10,6 @@ public class OrderResponse {
     Long id;
     Integer quantity;
     OrderStatus status;
-    String address;
     LocalDate orderDate;
 
     CustomerResponse customer;

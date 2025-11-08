@@ -93,7 +93,6 @@ public class OrderServiceImpl implements OrderService {
 
 
         orderToUpdate.setQuantity(request.getQuantity());
-        orderToUpdate.setAddress(request.getAddress());
 
 
         if (!orderToUpdate.getCustomer().getId().equals(request.getCustomerId())) {
