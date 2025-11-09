@@ -15,4 +15,6 @@ public interface DeliveryService {
     List<DeliveryResponse> getAllDeliveries();
 
     DeliveryResponse updateDeliveryStatus(Long id, DeliveryStatus newStatus);
+
+    DeliveryResponse getDeliveryByOrderId(Long orderId);
 }

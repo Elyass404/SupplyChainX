@@ -11,6 +11,7 @@ import com.supplychainx.delivery_service.service.DeliveryService;
 import com.supplychainx.exception.RessourceNotFoundException;
 import com.supplychainx.supply_service.model.enums.DeliveryStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,7 +75,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     public DeliveryResponse updateDeliveryStatus(Long id, DeliveryStatus newStatus) {
         Delivery delivery = findDeliveryEntity(id);
 
-        //
+
         if (newStatus == DeliveryStatus.DELIVERED && delivery.getStatus() != DeliveryStatus.IN_PROGRESS) {
             throw new IllegalStateException("Delivery must be IN_PROGRESS before it can be marked as DELIVERED.");
         }
@@ -82,5 +83,14 @@ public class DeliveryServiceImpl implements DeliveryService {
         delivery.setStatus(newStatus);
         Delivery updatedDelivery = deliveryRepository.save(delivery);
         return deliveryMapper.toResponse(updatedDelivery);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DeliveryResponse getDeliveryByOrderId(Long orderId) {
+        Delivery delivery = deliveryRepository.findByOrderId(orderId)
+                .orElseThrow(()-> new RessourceNotFoundException("Delivery not found for the Order with th"));
+
+        return deliveryMapper.toResponse(delivery);
     }
 }
