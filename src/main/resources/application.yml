@@ -5,6 +5,7 @@ spring:
   application:
     name: SupplyChainX
 
+
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/supplychainx?createDatabaseIfNotExist=true}
     username: ${DB_USERNAME:root}
