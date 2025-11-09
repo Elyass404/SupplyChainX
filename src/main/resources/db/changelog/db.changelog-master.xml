@@ -11,5 +11,6 @@
     <include file="db/changelog/04-create-supply-order-tables.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/05-create-production-product-table.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/06-create-production-order-tables.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/07-create-delivery-tables.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
