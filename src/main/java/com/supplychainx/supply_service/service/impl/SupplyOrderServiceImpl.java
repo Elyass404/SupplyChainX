@@ -200,4 +200,47 @@ public class SupplyOrderServiceImpl implements SupplyOrderService {
     public boolean existsBySupplierAndDate(Long supplierId, LocalDate orderDate) {
         return supplyOrderRepository.existsBySupplier_IdAndOrderDate(supplierId, orderDate);
     }
+
+    /**
+     * Business Logic: Updates the order status to RECEIVED and increases RawMaterial stock.
+     */
+    @Override
+    public SupplyOrderResponse receiveOrder(Long id) {
+        SupplyOrder order = supplyOrderRepository.findById(id)
+                .orElseThrow(() -> new RessourceNotFoundException("Supply Order not found with ID: " + id));
+
+        if (order.getStatus() == SupplyOrderStatus.RECEIVED) {
+            throw new IllegalStateException("Order is already marked as RECEIVED.");
+        }
+
+        // 1. Perform stock increase
+        increaseMaterialStock(order);
+
+        // 2. Update status and save
+        order.setStatus(SupplyOrderStatus.RECEIVED);
+        SupplyOrder savedOrder = supplyOrderRepository.save(order);
+
+        return supplyOrderMapper.toResponse(savedOrder);
+    }
+
+    /**
+     * Internal logic for increasing materials in the RawMaterial stock.
+     */
+    private void increaseMaterialStock(SupplyOrder order) {
+        // Note: We use the list of materials linked to the SupplyOrder entity
+        List<SupplyOrderMaterial> lineItems = order.getMaterials();
+
+        for (SupplyOrderMaterial item : lineItems) {
+            // We assume rawMaterial is eagerly fetched or retrieved via proxy
+            RawMaterial material = rawMaterialRepository.findById(item.getRawMaterial().getId())
+                    .orElseThrow(() -> new RessourceNotFoundException("Raw Material in order line not found."));
+
+            int receivedQuantity = item.getQuantity();
+
+            // 🔑 INCREASE STOCK
+            material.setStock(material.getStock() + receivedQuantity);
+
+            rawMaterialRepository.save(material);
+        }
+    }
 }
