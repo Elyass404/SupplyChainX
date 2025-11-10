@@ -88,4 +88,13 @@ public class SupplyOrderController {
         List<SupplyOrderResponse> orders = supplyOrderService.getOrdersByDateRange(start, end);
         return ResponseEntity.ok(orders);
     }
+
+    // --- Status Update: Receive Order ---
+// Endpoint: PUT /api/v1/supply-orders/{id}/receive
+    @PutMapping("/{id}/receive")
+    public ResponseEntity<SupplyOrderResponse> receiveOrder(@PathVariable Long id) {
+        SupplyOrderResponse response = supplyOrderService.receiveOrder(id);
+        // Returns 200 OK and the updated resource
+        return ResponseEntity.ok(response);
+    }
 }

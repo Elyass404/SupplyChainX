@@ -35,4 +35,7 @@ public interface SupplyOrderService {
     List<SupplyOrderResponse> getOrdersByDateRange(LocalDate startDate, LocalDate endDate);
 
     boolean existsBySupplierAndDate(Long supplierId, LocalDate orderDate);
+
+    //to increase the stock of raw material
+    SupplyOrderResponse receiveOrder(Long id);
 }
