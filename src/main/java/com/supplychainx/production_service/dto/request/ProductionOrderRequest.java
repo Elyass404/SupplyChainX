@@ -2,8 +2,9 @@ package com.supplychainx.production_service.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 import lombok.Value;
-
+@Builder
 @Value
 public class ProductionOrderRequest {
 
@@ -15,6 +16,11 @@ public class ProductionOrderRequest {
     @NotNull(message = "Quantity is required.")
     @Positive(message = "Quantity must be a positive value.")
     Integer quantity;
+
+    public ProductionOrderRequest(Long productId, Integer quantity) {
+        this.productId = productId;
+        this.quantity = quantity;
+    }
 
     // Note: 'status', 'startDate', and 'endDate' are calculated or set by the service layer.
 }

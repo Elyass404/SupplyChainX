@@ -9,8 +9,11 @@ import com.supplychainx.delivery_service.repository.CustomerRepository;
 import com.supplychainx.delivery_service.repository.OrderRepository;
 import com.supplychainx.delivery_service.service.OrderService;
 import com.supplychainx.exception.RessourceNotFoundException;
+import com.supplychainx.production_service.dto.request.ProductionOrderRequest;
 import com.supplychainx.production_service.model.Product;
+import com.supplychainx.production_service.model.ProductionOrder;
 import com.supplychainx.production_service.repository.ProductRepository;
+import com.supplychainx.production_service.service.ProductionOrderService;
 import com.supplychainx.supply_service.model.enums.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ public class OrderServiceImpl implements OrderService {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
+    private final ProductionOrderService productionOrderService;
 
     /**
      * Helper method to retrieve an Order entity or throw an exception.
@@ -60,14 +64,23 @@ public class OrderServiceImpl implements OrderService {
         Product product = findProductEntity(request.getProductId());
 
 
+
         if (product.getStock() < request.getQuantity()) {
-            throw new IllegalStateException("Cannot create order: Insufficient stock for product " + product.getName() +
-                    ". Available: " + product.getStock() + ", Requested: " + request.getQuantity());
+//            throw new IllegalStateException("Cannot create order: Insufficient stock for product " + product.getName() +
+//                    ". Available: " + product.getStock() + ", Requested: " + request.getQuantity());
+
+            ProductionOrderRequest  productionOrderRequest =  new ProductionOrderRequest(product.getId(),request.getQuantity()-product.getStock());
+
+            //productionOrderService.createOrder(ProductionOrderRequest.builder().productId(product.getId()).quantity(request.getQuantity()-product.getStock()).build());
         }
 
         Order newOrder = orderMapper.toEntity(request);
         newOrder.setCustomer(customer);
+        product.setStock(product.getStock() - request.getQuantity());
         newOrder.setProduct(product);
+
+
+
         // Status and orderDate are set via @PrePersist in the Order entity (default: IN_PREPARATION)
 
         Order savedOrder = orderRepository.save(newOrder);
