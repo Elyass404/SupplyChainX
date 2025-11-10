@@ -1,10 +1,13 @@
 package com.supplychainx.delivery_service.dto.response;
 
-import com.supplychainx.production_service.dto.response.ProductResponse;
 import com.supplychainx.supply_service.model.enums.OrderStatus;
+import lombok.Builder;
+import lombok.Value;
 
 import java.time.LocalDate;
 
+@Value
+@Builder
 public class OrderResponse {
 
     Long id;
@@ -12,6 +15,7 @@ public class OrderResponse {
     OrderStatus status;
     LocalDate orderDate;
 
-    CustomerResponse customer;
-    ProductResponse product;
+
+    Long customerId;
+    Long productId;
 }

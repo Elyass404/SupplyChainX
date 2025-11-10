@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(callSuper = true) // Adding callSuper for completeness, but the excludes are key
 public class Order {
 
     @Id
@@ -29,23 +30,23 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
+    @ToString.Exclude // <--- CRITICAL FIX: Prevents infinite loop with Customer
     private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @ToString.Exclude
     private Product product;
 
-    // Additional fields commonly required for orders (based on US35-US39 context)
+    // Additional fields commonly required for orders
     private LocalDate orderDate;
 
-    // Use @PrePersist to set default values before saving
     @PrePersist
     public void prePersist() {
         if (this.orderDate == null) {
             this.orderDate = LocalDate.now();
         }
         if (this.status == null) {
-            // Assuming PENDING is the initial status for a new customer order
             this.status = OrderStatus.IN_PREPARATION;
         }
     }
