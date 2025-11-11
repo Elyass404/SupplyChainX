@@ -71,7 +71,11 @@ public class OrderServiceImpl implements OrderService {
 
             ProductionOrderRequest  productionOrderRequest =  new ProductionOrderRequest(product.getId(),request.getQuantity()-product.getStock());
 
-            //productionOrderService.createOrder(ProductionOrderRequest.builder().productId(product.getId()).quantity(request.getQuantity()-product.getStock()).build());
+            //you can use one of the two ways to create the production order automatically, below directly we are using the objec we created above this line
+            //productionOrderService.createOrder(productionOrderRequest);
+
+            //or you can use the way were you use the builder
+            productionOrderService.createOrder(ProductionOrderRequest.builder().productId(product.getId()).quantity(request.getQuantity()-product.getStock()).build());
         }
 
         Order newOrder = orderMapper.toEntity(request);
