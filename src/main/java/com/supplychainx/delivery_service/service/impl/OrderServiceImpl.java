@@ -77,6 +77,8 @@ public class OrderServiceImpl implements OrderService {
 
             //or you can use the way were you use the builder
             productionOrderService.createOrder(ProductionOrderRequest.builder().productId(product.getId()).quantity(request.getQuantity()-product.getStock()).build());
+
+            //todo: you should create a custome exception to show the message that the stock is inssufisant and to come back later when the stock is refreshed, since we sent an order to start the production of the of the product
         }
 
         Order newOrder = orderMapper.toEntity(request);
