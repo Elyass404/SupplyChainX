@@ -66,8 +66,6 @@ public class OrderServiceImpl implements OrderService {
 
 
         if (product.getStock() < request.getQuantity()) {
-//            throw new IllegalStateException("Cannot create order: Insufficient stock for product " + product.getName() +
-//                    ". Available: " + product.getStock() + ", Requested: " + request.getQuantity());
 
             //creating the object of production order, so we can automatically create a production order when the stock is inssufisant with the quantity the client is demanding
             //ProductionOrderRequest  productionOrderRequest =  new ProductionOrderRequest(product.getId(),request.getQuantity()-product.getStock());
