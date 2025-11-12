@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # 1. POSTGRESQL DATABASE SERVICE
+  db:
+    image: postgres:15-alpine # Lightweight stable image
+    container_name: postgres_db
+    environment:
+      # These variables set up the database and are used by Spring Boot
+      POSTGRES_DB: supplychainx_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Volume for persistent data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  # 2. SONARQUBE SERVICE (Code Quality Analysis Server)
+  sonarqube:
+    image: sonarqube:10.5-community
+    container_name: sonarqube_server
+    environment:
+      # SonarQube connects to the 'db' service using the service name as hostname
+      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar_user
+      SONAR_JDBC_PASSWORD: sonar_password
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+    ports:
+      - "9000:9000" # SonarQube web UI port
+    depends_on:
+      - db # Must wait for the database to start
+    restart: always
+
+  # 3. YOUR SPRING BOOT APPLICATION SERVICE
+  app:
+    build:
+      context: . # Instruct Docker Compose to build using your local Dockerfile
+      dockerfile: Dockerfile
+    container_name: supplychainx_app
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring Boot connects to the 'db' service using the service name 'db'
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/supplychainx_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_PROFILES_ACTIVE: docker # Activate a specific profile for container environment
+    depends_on:
+      - db
+    restart: on-failure
+
+# 4. VOLUME DEFINITIONS (Data Persistence)
+volumes:
+  postgres_data:
+  sonarqube_data:
