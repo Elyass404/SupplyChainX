@@ -7,19 +7,19 @@
 
     <changeSet id="05-create-production-product-table" author="ilyass mar">
         <createTable tableName="production_products">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="production_time" type="INT">
+            <column name="production_time" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
-            <column name="cost" type="DOUBLE">
+            <column name="cost" type="DOUBLE PRECISION">
                 <constraints nullable="false"/>
             </column>
-            <column name="stock" type="INT">
+            <column name="stock" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
         </createTable>

@@ -5,9 +5,10 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
 
+    <!-- Create supply_order table -->
     <changeSet id="004-1-create-supply-order-table" author="ilyass mar">
         <createTable tableName="supply_order">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="order_date" type="DATE">
@@ -28,12 +29,12 @@
                 referencedColumnNames="id"
                 constraintName="fk_supply_order_supplier"
                 onDelete="RESTRICT"/>
-
     </changeSet>
 
+    <!-- Create supply_order_material table -->
     <changeSet id="004-2-create-supply-order-material-table" author="ilyass mar">
         <createTable tableName="supply_order_material">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="supply_order_id" type="BIGINT">
@@ -42,14 +43,18 @@
             <column name="raw_material_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="quantity" type="INT">
+            <column name="quantity" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
         </createTable>
 
-        <addUniqueConstraint tableName="supply_order_material" columnNames="supply_order_id, raw_material_id" constraintName="uc_som_order_material"/>
+        <addUniqueConstraint
+                tableName="supply_order_material"
+                columnNames="supply_order_id, raw_material_id"
+                constraintName="uc_som_order_material"/>
     </changeSet>
 
+    <!-- Add foreign key constraints for supply_order_material -->
     <changeSet id="004-3-add-supply-order-material-fks" author="ilyass mar">
         <addForeignKeyConstraint
                 baseTableName="supply_order_material"
@@ -66,7 +71,6 @@
                 referencedColumnNames="id"
                 constraintName="fk_som_raw_material"
                 onDelete="RESTRICT"/>
-
     </changeSet>
 
 </databaseChangeLog>
