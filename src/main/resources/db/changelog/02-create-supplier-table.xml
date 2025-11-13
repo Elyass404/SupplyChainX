@@ -6,10 +6,10 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
 
     <changeSet id="2-create-supplier-table" author="youcode">
-        <comment>Create the 'suppliers' table and its required columns.</comment>
+        <comment>Create the 'suppliers' table and its required columns (PostgreSQL version).</comment>
 
         <createTable tableName="suppliers">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
 
@@ -21,10 +21,9 @@
                 <constraints nullable="false" unique="true"/>
             </column>
 
-            <column name="rating" type="DOUBLE"/>
+            <column name="rating" type="DOUBLE PRECISION"/>
 
-            <column name="lead_time" type="INT"/>
-
+            <column name="lead_time" type="INTEGER"/>
         </createTable>
 
     </changeSet>

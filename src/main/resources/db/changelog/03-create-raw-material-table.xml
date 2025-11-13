@@ -5,18 +5,19 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
 
+    <!-- Create raw_material table -->
     <changeSet id="003-1-create-raw-material-table" author="ilyass mar">
         <createTable tableName="raw_material">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="stock" type="INT">
+            <column name="stock" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
-            <column name="stock_min" type="INT">
+            <column name="stock_min" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
             <column name="unit" type="VARCHAR(50)">
@@ -25,8 +26,9 @@
         </createTable>
     </changeSet>
 
+    <!-- Create supplier_raw_material junction table -->
     <changeSet id="003-2-create-supplier-raw-material-table" author="ilyass mar">
-        <createTable tableName="supplier_raw_material" tablespace="INNODB">
+        <createTable tableName="supplier_raw_material">
             <column name="raw_material_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -41,6 +43,7 @@
                 constraintName="pk_supplier_raw_material"/>
     </changeSet>
 
+    <!-- Add foreign keys for supplier_raw_material -->
     <changeSet id="003-3-add-supplier-raw-material-fks" author="ilyass mar">
         <addForeignKeyConstraint
                 baseTableName="supplier_raw_material"
@@ -57,7 +60,6 @@
                 referencedColumnNames="id"
                 constraintName="fk_srm_supplier"
                 onDelete="CASCADE"/>
-
     </changeSet>
 
 </databaseChangeLog>
