@@ -12,6 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-user.sql:/docker-entrypoint-initdb.d/init-user.sql # <--- this line allow us to create the db for the sonarqube user
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -21,17 +22,17 @@ services:
       - supplychainx-network
 
   pgadmin:
-      image: dpage/pgadmin4:latest
-      container_name: pgadmin
-      environment:
-        PGADMIN_DEFAULT_EMAIL: admin@admin.com
-        PGADMIN_DEFAULT_PASSWORD: admin
-      ports:
-        - "5050:80"
-      depends_on:
-        - postgres_db
-      networks:
-        - supplychainx-network
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres_db
+    networks:
+      - supplychainx-network
 
   supplychainx_app:
     build: .
@@ -49,12 +50,42 @@ services:
     networks:
       - supplychainx-network
 
-  # Comment out SonarQube for now - fix the main app first
-  # sonarqube_server:
-  #   ...
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube_server
+    ports:
+      - "9000:9000"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    environment:
+      # Database connection settings for SonarQube's internal data
+      # NOTE: You MUST ensure this database (sonarqube_db) and user (sonar_user) exist in your Postgres instance.
+      SONAR_JDBC_URL: jdbc:postgresql://postgres_db:5432/sonarqube_db
+      SONAR_JDBC_USERNAME: sonar_user
+      SONAR_JDBC_PASSWORD: sonar_password_secret # Change this password!
+      # Necessary parameter for Docker environments to bypass bootstrap checks on low-resource machines
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - supplychainx-network
+    # Required JVM settings for Elasticsearch which runs inside SonarQube
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
 
 volumes:
   postgres_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
 
 networks:
   supplychainx-network:
