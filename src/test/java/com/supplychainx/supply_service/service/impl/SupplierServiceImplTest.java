@@ -1,4 +1,4 @@
-package com.supplychainx.service.impl;
+package com.supplychainx.supply_service.service.impl;
 
 import com.supplychainx.supply_service.dto.request.SupplierRequest; // Import added
 import com.supplychainx.supply_service.dto.response.SupplierResponse;
