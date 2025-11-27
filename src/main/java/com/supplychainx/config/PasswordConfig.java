@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class PasswordConfig {
 
 
+
     /**
      * Defines the PasswordEncoder bean used for hashing and verifying passwords.
      */
