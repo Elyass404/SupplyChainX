@@ -14,7 +14,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # Changed from 'none' - this will auto-update schema
+      ddl-auto: update   # Changed from 'none' - this will auto-update schema
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
