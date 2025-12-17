@@ -86,6 +86,10 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/v1/supply-orders/**").hasAnyRole("ADMIN", "PURCHASING_MANAGER")
 
+                        //We can add other end points and choose the roles that we only want them to acceess those endpoints,
+                        // but for now i won't add them because i dont want to waste time.
+
+
                         .anyRequest().authenticated()
                 );
 
