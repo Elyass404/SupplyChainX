@@ -29,7 +29,14 @@ public class SecurityConfig {
 
     //here iam creating an instance of the password config because i did it in other file before to hash the password
     //and because  spring knows only one bean, i cant define it here and there, that is why iam creating this instance here instead of making the one above this comment
-    PasswordConfig passwordConfig = new PasswordConfig();
+    //PasswordConfig passwordConfig = new PasswordConfig();
+
+    // using the dependency injection in order to have an instance of the passwordConfig located in the root config folder
+    private final PasswordConfig passwordConfig;
+
+    public SecurityConfig(PasswordConfig passwordConfig){
+        this.passwordConfig = passwordConfig;
+    }
 
     //Here iam defining the fake users that I would store in the memory as users that can log in
     @Bean
