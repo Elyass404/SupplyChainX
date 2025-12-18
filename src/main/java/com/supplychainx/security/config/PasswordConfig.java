@@ -1,4 +1,4 @@
-package com.supplychainx.config;
+package com.supplychainx.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
