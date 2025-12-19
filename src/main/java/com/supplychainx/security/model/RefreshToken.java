@@ -1,5 +1,6 @@
-package com.supplychainx.supply_service.model;
+package com.supplychainx.security.model;
 
+import com.supplychainx.supply_service.model.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
