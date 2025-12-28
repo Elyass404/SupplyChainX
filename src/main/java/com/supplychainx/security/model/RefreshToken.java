@@ -34,7 +34,7 @@ public class RefreshToken {
     private boolean revoked;
 
     //here we are relating the to token to its user, so one token can be related only to one user and one user can have only one token
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", referencedColumnName = "id")
     private User user;
 
