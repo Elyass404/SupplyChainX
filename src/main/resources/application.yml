@@ -14,7 +14,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update   # Changed from 'none' - this will auto-update schema
+      ddl-auto: create 
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -23,7 +23,7 @@ spring:
     open-in-view: false
 
   liquibase:
-    enabled: true
+    enabled: false
     change-log: classpath:db/changelog/db.changelog-master.xml
 
   jackson:
@@ -44,6 +44,7 @@ logging:
     org.springframework.web: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: debug
 
 springdoc:
   api-docs:
