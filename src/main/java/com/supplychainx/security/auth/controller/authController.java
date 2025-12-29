@@ -1,6 +1,7 @@
 package com.supplychainx.security.auth.controller;
 
 import com.supplychainx.security.auth.dto.request.AuthenticationRequest;
+import com.supplychainx.security.auth.dto.request.RefreshTokenRequest;
 import com.supplychainx.security.auth.dto.request.RegisterRequest;
 import com.supplychainx.security.auth.dto.response.AuthenticationResponse;
 import com.supplychainx.security.auth.service.AuthenticationService;
@@ -27,5 +28,10 @@ public class authController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request){
         return ResponseEntity.ok(authService.authenticate(request));
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthenticationResponse> refreshToken(@RequestBody RefreshTokenRequest request){
+        return ResponseEntity.ok(authService.refreshToken(request));
     }
 }
