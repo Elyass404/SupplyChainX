@@ -123,6 +123,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!--This dependency make the spring boot app talks with the logstash with logs -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
+
 
         <!-- Here are the dependencies related to the JWT-->
 
