@@ -2,7 +2,9 @@ package com.supplychainx.security.auth.service.impl;
 
 
 
+import com.supplychainx.exception.InvalidRefreshToken;
 import com.supplychainx.security.auth.dto.request.AuthenticationRequest;
+import com.supplychainx.security.auth.dto.request.RefreshTokenRequest;
 import com.supplychainx.security.auth.dto.request.RegisterRequest;
 import com.supplychainx.security.auth.dto.response.AuthenticationResponse;
 import com.supplychainx.security.auth.service.AuthenticationService;
@@ -85,6 +87,39 @@ import org.springframework.stereotype.Service;
                     .accessToken(jwtToken)
                     .refreshToken(refreshToken)
                     .build();
+        }
+
+        @Override
+        public AuthenticationResponse refreshToken(RefreshTokenRequest request){
+
+            String requestRefreshToken= request.getRefreshToken();
+
+            //here iam extracting the email from the refresh token came in the request
+            String userEmail = jwtService.extractUsername(requestRefreshToken);
+
+            User user = repository.findByEmail(userEmail).orElseThrow();
+
+            //now i will check if the refresh token that sent in the request is valid, and related to the same user we got by the email extracted from the token
+            if(jwtService.isTokenValid(requestRefreshToken,user)){
+                // now i Check strictly against the DB (is it revoked?)
+                var isTokenValidInDb = tokenRepository.findByToken(requestRefreshToken)
+                        .map(t -> !t.isRevoked())
+                        .orElse(false);
+
+                if (isTokenValidInDb) {
+                    //if the token is valid in the db, we generate a new toke
+                    String accessToken = jwtService.generateToken(user);
+
+                    //now the final step, i will return the access token and the same refresh token
+                    return AuthenticationResponse.builder()
+                            .accessToken(accessToken)
+                            .refreshToken(requestRefreshToken)
+                            .build();
+                }
+            }
+
+            //if the refresh token is not valid, the invalid refresh token exception will be thrown
+            throw new InvalidRefreshToken("invalid refresh token");
         }
 
         // --- Helper Methods ---
