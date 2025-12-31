@@ -18,3 +18,5 @@ public class PasswordConfig {
         return new BCryptPasswordEncoder();
     }
 }
+
+// the last commit in 2026 , happy new year and i hope the next year to be full of success inchaalah, see ya
