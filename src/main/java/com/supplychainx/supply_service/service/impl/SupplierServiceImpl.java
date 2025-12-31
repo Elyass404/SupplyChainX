@@ -9,6 +9,8 @@ import com.supplychainx.supply_service.model.Supplier;
 import com.supplychainx.supply_service.repository.SupplierRepository;
 import com.supplychainx.supply_service.service.SupplierService;
 import lombok.RequiredArgsConstructor;
+import org.jboss.logging.MDC;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class SupplierServiceImpl implements SupplierService {
 
     private final SupplierRepository supplierRepository;
@@ -40,8 +43,19 @@ public class SupplierServiceImpl implements SupplierService {
         // 3. Convert DTO to Entity
         Supplier newSupplier = supplierMapper.toEntity(request);
 
+        // Add the "Business ID" sticker
+        // We use the supplier's Email as the Business ID for now
+        MDC.put("username", request.getEmail());
+        log.info("Creating supplier with name: {} ", request.getName());
+
         // 4. Save Entity
         Supplier savedSupplier = supplierRepository.save(newSupplier);
+
+        //we show the log that the supplier is created
+        log.info("Created supplier with name of : {}", request.getName());
+
+        // now we clear the MDC
+        MDC.clear();
 
         // 5. Convert saved Entity to Response DTO
         return supplierMapper.toResponse(savedSupplier);
