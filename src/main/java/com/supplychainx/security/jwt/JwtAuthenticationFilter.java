@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.jboss.logging.MDC;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -68,10 +69,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // 7. Update Security Context (Log the user in)
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                //now iam adding the details to the log, so we know who made the action and what whose the log is related to
+                MDC.put("userId", userEmail);
+                MDC.put("userRole", userDetails.getAuthorities().toString());
             }
         }
 
         // 8. Continue the chain (go to the next filter or the Controller)
-        filterChain.doFilter(request, response);
+        try{
+            filterChain.doFilter(request, response);
+        }finally {
+            // If we don't do this, the next user might inherit the previous user's ID!
+            MDC.clear();
+        }
     }
 }
