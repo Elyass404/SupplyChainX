@@ -35,6 +35,8 @@ services:
         resources:
           limits:
             memory: 1G
+      networks:
+        - supplychainx-network
 
   logstash:
       image: docker.elastic.co/logstash/logstash:8.11.1
@@ -50,6 +52,8 @@ services:
         resources:
           limits:
             memory: 1G
+      networks:
+        - supplychainx-network
 
   kibana:
       image: docker.elastic.co/kibana/kibana:8.11.1
@@ -64,6 +68,9 @@ services:
         resources:
           limits:
             memory: 1G
+      networks:
+        - supplychainx-network
+
 
   #end of elastic stack configuration
 
@@ -86,10 +93,13 @@ services:
     depends_on:
       postgres_db:
         condition: service_healthy
+      logstash:
+        condition: service_started
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_db:5432/supplychainx_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
+      - LOGSTASH_HOST=logstash
     ports:
       - "8080:8080"
     restart: on-failure
