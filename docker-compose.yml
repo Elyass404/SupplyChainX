@@ -87,6 +87,23 @@ services:
     networks:
       - supplychainx-network
 
+  keycloak:
+    image:
+      quay.io/keycloak/keycloak:23.0.1
+    container_name:
+      keycloak
+    environment:
+      # the username and the pass for the keycloak dashboard
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      # since we are using the port 8080 for the app, we will run the keycloak in the 8081
+      - "8081:8080"
+    command: start-dev
+    networks:
+      - supplychainx-network
+
+
   supplychainx_app:
     build: .
     container_name: supplychainx_app
@@ -100,6 +117,12 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - LOGSTASH_HOST=logstash
+        
+        # Trust tokens issued by "localhost" (what Postman sees)
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://localhost:8081/realms/supplychain-realm
+        
+        # But go to "keycloak" container to download the keys (Internal Network)
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/supplychain-realm/protocol/openid-connect/certs
     ports:
       - "8080:8080"
     restart: on-failure
