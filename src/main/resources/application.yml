@@ -26,6 +26,16 @@ spring:
     enabled: false
     change-log: classpath:db/changelog/db.changelog-master.xml
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # This tells Spring Boot: "Download the Public Keys from this Realm"
+          # Since we are running the app in IntelliJ, we use localhost:8081
+          issuer-uri: http://localhost:8081/realms/supplychain-realm
+          # This ensures we validate the 'aud' (audience) claim if needed (optional usually, but good practice)
+          jwk-set-uri: http://localhost:8081/realms/supplychain-realm/protocol/openid-connect/certs
+
   jackson:
     serialization:
       fail-on-empty-beans: false
