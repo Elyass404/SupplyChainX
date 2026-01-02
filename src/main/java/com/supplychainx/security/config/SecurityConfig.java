@@ -1,102 +1,119 @@
 package com.supplychainx.security.config;
 
-import com.supplychainx.security.jwt.JwtAuthenticationFilter;
-import com.supplychainx.security.service.UserDetailsServiceImpl;
+import com.supplychainx.security.exception.CustomAccessDeniedHandler;
+import com.supplychainx.security.exception.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.Map;
+import java.util.List;
+import java.util.Collection;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor // Lombok generates the constructor for all 'final' fields (Dependency Injection)
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    // 1. Inject the JWT Filter we created
-    // This is the "Guard" that checks the token header.
-    private final JwtAuthenticationFilter jwtAuthFilter;
-
-    // 2. Inject our custom User Service
-    // This connects Security to your Database (UserRepository).
-    private final UserDetailsServiceImpl userDetailsService;
-
-    // 3. Inject the PasswordEncoder
-    // Spring will automatically find the Bean you created in your 'PasswordConfig' file.
-    private final PasswordEncoder passwordEncoder;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // DISABLE CSRF
-                // Best Practice: For stateless APIs (JWT), we disable CSRF because we don't use cookies/sessions.
+                // Disable CSRF (Standard for APIs)
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // DEFINE AUTHORIZATION RULES
+                //Define URL Permissions
                 .authorizeHttpRequests(auth -> auth
-                        // A. Public Endpoints (WhiteList)
-                        // We MUST allow access to Login/Register without a token, otherwise no one can enter!
-                        // We will create these endpoints in the next step.
-                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/error").permitAll() // Keep error page open
 
-                        // B. Secured Endpoints (Your existing rules)
                         .requestMatchers("/api/v1/raw-materials/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/suppliers/**").hasAnyRole("ADMIN", "SUPPLY_MANAGER")
                         .requestMatchers("/api/v1/supply-orders/**").hasAnyRole("ADMIN", "PURCHASING_MANAGER")
+                        //i can add more endpoints here to secure them by roles
 
-                        // C. Catch-All
-                        // Any other request requires a valid JWT token.
                         .anyRequest().authenticated()
                 )
 
-                // STATELESS SESSION POLICY (Crucial for JWT)
-                // This tells Spring: "Do NOT create a JSESSIONID cookie."
-                // "Do NOT save the user in memory after the request finishes."
-                // This satisfies the "API Stateless" requirement in your brief.
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Exception Handling
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint) // For 401
+                        .accessDeniedHandler(customAccessDeniedHandler)           // For 403
+                )
 
-                // AUTHENTICATION PROVIDER
-                // Connects the "Who are you?" logic (DB) with the "Password check" logic (BCrypt).
-                .authenticationProvider(authenticationProvider())
+                // 3. Enable Keycloak (OAuth2 Resource Server)
+                // so it is like iam telling spring to "Validate the token against the URL in application.yml"
+                .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt
+                        .decoder(jwtDecoder()) // uses the custom decoder
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()) // uses the new converter
+                )
 
-                // ADD THE JWT FILTER
-                // We insert our JWT filter BEFORE the standard UsernamePasswordAuthenticationFilter.
-                // Why? We want to check the token *first*. If it's valid, we log them in immediately.
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .authenticationEntryPoint(customAuthenticationEntryPoint)
+        );
 
         return http.build();
     }
 
-    /**
-     * AUTHENTICATION PROVIDER
-     * This Bean tells Spring Security:
-     * 1. Where to find users (userDetailsService)
-     * 2. How to check passwords (passwordEncoder)
-     */
     @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        return authProvider;
+    public JwtDecoder jwtDecoder() {
+        // 1. Where to download keys (Use Internal Docker Name)
+        String jwkSetUri = "http://keycloak:8080/realms/supplychain-realm/protocol/openid-connect/certs";
+
+        // 2. Who issued the token (Use External Name from Postman)
+        String expectedIssuer = "http://localhost:8081/realms/supplychain-realm";
+
+        // Build the decoder using the INTERNAL connection
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+
+        // Add a validator to check the EXTERNAL issuer name
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(expectedIssuer);
+        jwtDecoder.setJwtValidator(withIssuer);
+
+        return jwtDecoder;
     }
 
-    /**
-     * AUTHENTICATION MANAGER
-     * We need to export this Bean so we can use it in our LoginController later.
-     * This is the component that actually performs the `authManager.authenticate(...)` call.
-     */
+    // to extract roles from Keycloak
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // 1. Tell Spring to look for the "roles" inside the token
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+        // 2. Add the "ROLE_" prefix (so "ADMIN" becomes "ROLE_ADMIN")
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            // A. Standard scopes (optional)
+            var authorities = grantedAuthoritiesConverter.convert(jwt);
+
+            // B. Extract REALM ROLES from "realm_access"
+            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+            if (realmAccess != null) {
+                List<String> roles = (List<String>) realmAccess.get("roles");
+                if (roles != null) {
+                    roles.forEach(role -> {
+                        // Create the authority "ROLE_ADMIN"
+                        authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                    });
+                }
+            }
+            return authorities;
+        });
+
+        return jwtAuthenticationConverter;
     }
 }
